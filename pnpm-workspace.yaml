@@ -1,0 +1,5 @@
+allowBuilds:
+  '@shopify/react-native-skia': true
+
+overrides:
+  expo-sharing: 56.0.17

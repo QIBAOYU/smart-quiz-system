@@ -1,0 +1,507 @@
+{
+  "__version": 4,
+  "__versionDoc": "native-shims 目录的版本标记（单一事实源）。nativePreviewRuntime.prepareNativePreviewRuntime 解析本字段，决定存量项目沙箱里的 native-shims/ 是否需要升级覆盖。版本号只增不减；凡改动本目录下任何 stub / runtime / manifest 的运行时行为，必须同步 +1，否则已回填的存量项目永远收不到更新。与 metro.config.js 的 @meoo-native-preview-runtime 标记是两条独立的版本线，各管各的目录。版本史：v1 = 引入本标记时的首个版本；v2 = expo-file-system 补齐 File/Directory/Paths 类体系与枚举、expo-application 常量形态修正、expo-secure-store 由 passthrough 降为 fake-data shim、picker 与 segmented-control 升为 passthrough；v3 = expo-application 补 ApplicationReleaseType 枚举、expo-file-system 补 DEFAULT_DEBOUNCE_MS 常量并由 noop 改判 fake-data（该版当时漏记版本史，事后据 41bbd923e 补录）；v4 = 补 @expo/ui 混合包的子路径分档：swift-ui/modifiers 与 jetpack-compose/modifiers 降为 shimmed（前者 barrel 顶层 requireNativeModule 导致整页白屏），community/* 8 个与 babel-plugin 显式记为 passthrough。",
+  "__warning": "本文件是原生能力分档的单一事实源，同时被沙箱扫描器与 Metro resolver 消费。以 __ 开头的键是元数据，不参与集合校验。",
+  "__doc": "tier: passthrough(web 体验成立，直接放行) | shimmed(重定向到 stub，页面局部降级) | blocking(整页切原生预览，初始为空)。kinds: component | api，仅统计用。grade: noop | placeholder | fake-data | equivalent。fake-data 指返回形状正确的假数据让调用链走通（权限给 granted、列表给空集合、创建给假 id），不承诺语义等价。replacement 相对本文件所在目录。键可以是包名，也可以是精确子路径 specifier；集合校验按键的包根投影与 scripts/allowed-deps.json 比对。scope: dependency(默认，用户可能直接 import 的原生依赖) | toolchain(工具链模块，用户从不直接引，只做运行时重定向，不参与白名单集合校验、不计入降级统计)。match: exact(默认，精确键或包根命中) | suffix(按 specifier 后缀命中，仅 toolchain 用，最后一级兜底)。",
+  "__evaluation": "分档基线是「保持今日行为、只提升粒度」：平台既有的 web 不兼容清单整体降为 shimmed（今天整页降级，改后局部降级，严格改善）；其余包今天已在 web 正常加载，记为 passthrough，行为不变。升档由高频榜数据驱动，不预判。",
+  "@expo/log-box": {
+    "tier": "shimmed",
+    "scope": "toolchain",
+    "replacement": "./stubs/expo-log-box.js",
+    "note": "屏蔽 Expo 自带全屏错误浮层：红屏会盖住我方 RuntimeErrorToast，并让错误消费路径分叉。包根键覆盖其全部子路径，连带砍掉 pretty-format 等传递依赖的转译开销。仅 web 生效，原生打包路径不经过 resolver 重定向"
+  },
+  "@expo/ui": {
+    "tier": "passthrough",
+    "note": "Universal 层自带 web 实现，iframe 内体验成立"
+  },
+  "@react-native-community/datetimepicker": {
+    "tier": "shimmed",
+    "kinds": [
+      "component"
+    ],
+    "grade": "placeholder",
+    "replacement": "./stubs/react-native-community-datetimepicker.js",
+    "note": "系统日期选择器依赖原生"
+  },
+  "@react-native-community/netinfo": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：navigator.onLine / navigator.connection，联网状态在 web 可用"
+  },
+  "@react-native-community/slider": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：自带完整 React web 组件实现（RNCSliderNativeComponent.web）"
+  },
+  "@react-native-picker/picker": {
+    "tier": "passthrough",
+    "note": "真包自带完整 web 实现：js/Picker.web.js 用 react-native-web 的 unstable_createElement 渲染，PickerIOS.web.js / PickerAndroid.web.js 一套俱全（dist/commonjs 下同样产出 .web.js），web 上直接可用"
+  },
+  "@react-native-segmented-control/segmented-control": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：js/index.js 默认导出 ./SegmentedControl，该文件头注释即 \"iOS 13 Style UISegmentedControl Component for Android and Web\"，纯 JS 实现（Animated/View），不引任何原生组件，web 上直接可渲染"
+  },
+  "@shopify/react-native-skia": {
+    "tier": "shimmed",
+    "kinds": [
+      "component"
+    ],
+    "grade": "placeholder",
+    "replacement": "./stubs/shopify-react-native-skia.js",
+    "note": "Skia 画布依赖原生"
+  },
+  "@supabase/supabase-js": {
+    "tier": "passthrough",
+    "note": "纯 JS SDK"
+  },
+  "ErrorOverlayWebControls": {
+    "tier": "shimmed",
+    "scope": "toolchain",
+    "match": "suffix",
+    "replacement": "./stubs/expo-log-box.js",
+    "note": "错误浮层的 web 控件与 @expo/log-box 不同包，包根键够不着，只能按 specifier 后缀命中。与上游 no-op 屏蔽规则同源（moduleName.endsWith('ErrorOverlayWebControls')）"
+  },
+  "expo": {
+    "tier": "passthrough",
+    "note": "核心运行时，web 一等支持"
+  },
+  "expo-application": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "noop",
+    "replacement": "./stubs/expo-application.js",
+    "note": "应用元信息依赖原生宿主"
+  },
+  "expo-asset": {
+    "tier": "passthrough",
+    "note": "资源加载 web 一等支持"
+  },
+  "expo-audio": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：HTMLAudioElement + AudioContext，播放与录制在 web 可用"
+  },
+  "expo-background-task": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "noop",
+    "replacement": "./stubs/expo-background-task.js",
+    "note": "后台任务无 web 对应物"
+  },
+  "expo-battery": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：navigator.getBattery，电量状态在 web 可用"
+  },
+  "expo-blur": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：CSS backdrop-filter: blur()，模糊效果在 web 成立"
+  },
+  "expo-brightness": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "noop",
+    "replacement": "./stubs/expo-brightness.js",
+    "note": "屏幕亮度依赖原生"
+  },
+  "expo-calendar": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "fake-data",
+    "replacement": "./stubs/expo-calendar.js",
+    "note": "系统日历依赖原生（真包 web 分支除两个列表外一律抛错）。升档 fake-data：权限返 granted、给一个预览日历、事件列表为空，让日程界面能渲染空态；枚举取自真包"
+  },
+  "expo-camera": {
+    "tier": "shimmed",
+    "kinds": [
+      "component",
+      "api"
+    ],
+    "grade": "equivalent",
+    "replacement": "./stubs/expo-camera.js",
+    "note": "expo-camera 自带 web 实现，CameraView 在浏览器渲染真实 <video> 预览，故整包透传真包；web 端唯一缺口 record 由子类补 MediaRecorder 实现，真包不可用时逐级降级回 noop 档"
+  },
+  "expo-cellular": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：navigator.connection，网络制式信息在 web 可读"
+  },
+  "expo-checkbox": {
+    "tier": "passthrough",
+    "note": "web 实现完整"
+  },
+  "expo-clipboard": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：navigator.clipboard（含 execCommand 兜底），读写剪贴板在 web 可用"
+  },
+  "expo-constants": {
+    "tier": "passthrough",
+    "note": "常量读取 web 可用"
+  },
+  "expo-contacts": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "fake-data",
+    "replacement": "./stubs/expo-contacts.js",
+    "note": "通讯录依赖原生（真包 web 分支为空壳）。升档 fake-data：权限返 granted、通讯录为空分页，让列表界面能渲染空态；与妙搭的 denied 不同，理由是 denied 会把预览卡在授权引导页"
+  },
+  "expo-crypto": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：crypto.subtle / crypto.getRandomValues，哈希与随机数在 web 可用"
+  },
+  "expo-dev-client": {
+    "tier": "passthrough",
+    "note": "开发客户端，web 打包不参与"
+  },
+  "expo-device": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：UAParser 解析 navigator.userAgent，设备信息在 web 可读"
+  },
+  "expo-document-picker": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：input[type=file]，选文件在 web 语义成立"
+  },
+  "expo-file-system": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "fake-data",
+    "replacement": "./stubs/expo-file-system.js",
+    "note": "沙箱文件系统依赖原生"
+  },
+  "expo-font": {
+    "tier": "passthrough",
+    "note": "字体加载 web 一等支持"
+  },
+  "expo-gl": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：WebGL 上下文，GLView 在 web 可用"
+  },
+  "expo-haptics": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：navigator.vibrate 并映射了各档振动模式，在 web 可用"
+  },
+  "expo-image": {
+    "tier": "passthrough",
+    "note": "web 实现完整"
+  },
+  "expo-image-manipulator": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：canvas 绘制/导出的 web module，裁剪缩放在 web 可用"
+  },
+  "expo-image-picker": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "equivalent",
+    "replacement": "./stubs/expo-image-picker.js",
+    "note": "expo-image-picker 自带 web 实现（input[type=file] + capture），相册选择/权限/移动端唤起相机均透传真包；仅桌面 Web 缺系统相机入口，由自研拍照对话框（预览+快门+本地选择）补齐，真包不可用时回落 noop 档"
+  },
+  "expo-intent-launcher": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "noop",
+    "replacement": "./stubs/expo-intent-launcher.js",
+    "note": "Android Intent 无 web 对应物"
+  },
+  "expo-keep-awake": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：Screen Wake Lock API（navigator.wakeLock），保持常亮在 web 可用"
+  },
+  "expo-linear-gradient": {
+    "tier": "passthrough",
+    "note": "web 实现完整"
+  },
+  "expo-linking": {
+    "tier": "passthrough",
+    "note": "web 走 URL，体验成立"
+  },
+  "expo-local-authentication": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "noop",
+    "replacement": "./stubs/expo-local-authentication.js",
+    "note": "生物识别依赖原生"
+  },
+  "expo-localization": {
+    "tier": "passthrough",
+    "note": "web 可读 navigator 语言"
+  },
+  "expo-location": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：navigator.geolocation，定位在 web 可用；地理编码子接口真包自身在 web 抛错，属既有行为"
+  },
+  "expo-mail-composer": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：mailto: + window.open，唤起邮件客户端在 web 成立"
+  },
+  "expo-media-library": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "fake-data",
+    "replacement": "./stubs/expo-media-library.js",
+    "note": "相册读写依赖原生（真包 web 分支仅权限且固定未授权）。升档 fake-data：权限返 granted(accessPrivileges=all)、资产分页为空、保存类返回形状正确的假资产"
+  },
+  "expo-navigation-bar": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "noop",
+    "replacement": "./stubs/expo-navigation-bar.js",
+    "note": "Android 导航栏无 web 对应物"
+  },
+  "expo-network": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：navigator.onLine，网络状态在 web 可读"
+  },
+  "expo-notifications": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "fake-data",
+    "replacement": "./stubs/expo-notifications.js",
+    "note": "推送通知依赖原生（真包 web 分支仅 badge 与 push token，调度类无实现）。升档 fake-data：权限返 granted、调度类返假 id、注册类静默返回可 remove 的订阅；预览不会真的弹通知"
+  },
+  "expo-print": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：window.print()，打印在 web 可用（printToFileAsync 同样走打印对话框）"
+  },
+  "expo-router": {
+    "tier": "passthrough",
+    "note": "路由 web 一等支持"
+  },
+  "expo-screen-capture": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "noop",
+    "replacement": "./stubs/expo-screen-capture.js",
+    "note": "截屏管控依赖原生"
+  },
+  "expo-screen-orientation": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：screen.orientation 的 lock/unlock，方向控制在 web 可用"
+  },
+  "expo-secure-store": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "fake-data",
+    "replacement": "./stubs/expo-secure-store.js",
+    "note": "真包 web 无实现：build/ExpoSecureStore.web.js 内容就是 export default {}，build/SecureStore.js:87 直调 getValueWithKeyAsync，web 上必 TypeError；官方文档 platforms 亦只有 android/ios/tvos。stub 用进程内存 Map 让存取链路走通（刷新即失效，不落 localStorage，避免诱导在预览里存真凭据）"
+  },
+  "expo-sensors": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：DeviceMotionEvent / DeviceOrientationEvent，加速度与陀螺仪在 web 可用"
+  },
+  "expo-sharing": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "noop",
+    "replacement": "./stubs/expo-sharing.js",
+    "note": "系统分享面板依赖原生"
+  },
+  "expo-sms": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "noop",
+    "replacement": "./stubs/expo-sms.js",
+    "note": "短信依赖原生"
+  },
+  "expo-speech": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：speechSynthesis，语音合成在 web 可用"
+  },
+  "expo-splash-screen": {
+    "tier": "passthrough",
+    "note": "web 有实现"
+  },
+  "expo-sqlite": {
+    "tier": "passthrough",
+    "note": "官方 Web/WASM 实现（wa-sqlite + OPFS），依赖模板 metro assetExts 并入 wasm；异步 API（openDatabaseAsync/execAsync/runAsync 等）可用，sync API 依赖 SharedArrayBuffer 暂不承诺。旧 stubs/expo-sqlite.js 保留供历史回滚，resolver 不再命中"
+  },
+  "expo-status-bar": {
+    "tier": "passthrough",
+    "note": "web 为空操作，不影响渲染"
+  },
+  "expo-system-ui": {
+    "tier": "passthrough",
+    "note": "web 有降级实现"
+  },
+  "expo-task-manager": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "noop",
+    "replacement": "./stubs/expo-task-manager.js",
+    "note": "后台任务无 web 对应物"
+  },
+  "expo-video": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：自带 VideoPlayer.web / VideoView.web，真实 <video> 播放"
+  },
+  "expo-web-browser": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：window.open，打开链接与 auth session 在 web 可用"
+  },
+  "lottie-react-native": {
+    "tier": "shimmed",
+    "kinds": [
+      "component"
+    ],
+    "grade": "placeholder",
+    "replacement": "./stubs/lottie-react-native.js",
+    "note": "动画播放器依赖原生"
+  },
+  "react": {
+    "tier": "passthrough",
+    "note": "web 基础库"
+  },
+  "react-dom": {
+    "tier": "passthrough",
+    "note": "web 基础库"
+  },
+  "react-native": {
+    "tier": "passthrough",
+    "note": "经 react-native-web 转译"
+  },
+  "react-native-gesture-handler": {
+    "tier": "passthrough",
+    "note": "web 实现完整"
+  },
+  "react-native-keyboard-controller": {
+    "tier": "passthrough",
+    "note": "web 有降级实现"
+  },
+  "react-native-reanimated": {
+    "tier": "passthrough",
+    "note": "web 实现完整"
+  },
+  "react-native-safe-area-context": {
+    "tier": "passthrough",
+    "note": "web 实现完整"
+  },
+  "react-native-screens": {
+    "tier": "passthrough",
+    "note": "web 实现完整"
+  },
+  "react-native-svg": {
+    "tier": "passthrough",
+    "note": "web 实现完整"
+  },
+  "react-native-url-polyfill": {
+    "tier": "passthrough",
+    "note": "纯 JS polyfill"
+  },
+  "react-native-view-shot": {
+    "tier": "passthrough",
+    "note": "真包自带 web 实现：canvas toDataURL 截图，在 web 可用"
+  },
+  "react-native-web": {
+    "tier": "passthrough",
+    "note": "web 转译层本体"
+  },
+  "react-native-webview": {
+    "tier": "shimmed",
+    "kinds": [
+      "component"
+    ],
+    "grade": "placeholder",
+    "replacement": "./stubs/react-native-webview.js",
+    "note": "嵌套 WebView 在预览 iframe 内不成立"
+  },
+  "@expo/ui/swift-ui": {
+    "tier": "shimmed",
+    "kinds": [
+      "component"
+    ],
+    "grade": "placeholder",
+    "replacement": "./stubs/expo-ui-swift-ui.js",
+    "note": "iOS 专用 SwiftUI 视图层"
+  },
+  "@expo/ui/jetpack-compose": {
+    "tier": "shimmed",
+    "kinds": [
+      "component"
+    ],
+    "grade": "placeholder",
+    "replacement": "./stubs/expo-ui-jetpack-compose.js",
+    "note": "Android 专用 Compose 视图层"
+  },
+  "@expo/ui/swift-ui/modifiers": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "placeholder",
+    "replacement": "./stubs/expo-ui-swift-ui-modifiers.js",
+    "note": "iOS 专用 SwiftUI modifier 层。src/swift-ui/modifiers/index.ts:28 是模块顶层的 requireNativeModule('ExpoUI')，该 barrel 152 处 export 中任意一个被 import 都会求值这一行，web 下抛错导致整页白屏。包根 @expo/ui 是 passthrough（universal 层自带 web 实现），此处必须用精确子路径条目覆盖包根退化结论"
+  },
+  "@expo/ui/jetpack-compose/modifiers": {
+    "tier": "shimmed",
+    "kinds": [
+      "api"
+    ],
+    "grade": "placeholder",
+    "replacement": "./stubs/expo-ui-jetpack-compose-modifiers.js",
+    "note": "Android 专用 Compose modifier 层。截至 56.0.x 本子树 0 处原生引用、web 上安全，按对称防御一并 shim：上游给 barrel 加一行顶层 requireNativeModule 就会复现 swift-ui 那次白屏"
+  },
+  "@expo/ui/community/bottom-sheet": {
+    "tier": "passthrough",
+    "note": "web 解析走平台中立的 Picker.tsx / PagerView.tsx，二者不 import State；引用 useNativeState 的是 .android.tsx / .ios.tsx，web 平台下 Metro 不解析，无原生求值"
+  },
+  "@expo/ui/community/datetime-picker": {
+    "tier": "passthrough",
+    "note": "web 解析走平台中立的 Picker.tsx / PagerView.tsx，二者不 import State；引用 useNativeState 的是 .android.tsx / .ios.tsx，web 平台下 Metro 不解析，无原生求值"
+  },
+  "@expo/ui/community/masked-view": {
+    "tier": "passthrough",
+    "note": "web 解析走平台中立的 Picker.tsx / PagerView.tsx，二者不 import State；引用 useNativeState 的是 .android.tsx / .ios.tsx，web 平台下 Metro 不解析，无原生求值"
+  },
+  "@expo/ui/community/menu": {
+    "tier": "passthrough",
+    "note": "web 解析走平台中立的 Picker.tsx / PagerView.tsx，二者不 import State；引用 useNativeState 的是 .android.tsx / .ios.tsx，web 平台下 Metro 不解析，无原生求值"
+  },
+  "@expo/ui/community/pager-view": {
+    "tier": "passthrough",
+    "note": "web 解析走平台中立的 Picker.tsx / PagerView.tsx，二者不 import State；引用 useNativeState 的是 .android.tsx / .ios.tsx，web 平台下 Metro 不解析，无原生求值"
+  },
+  "@expo/ui/community/picker": {
+    "tier": "passthrough",
+    "note": "web 解析走平台中立的 Picker.tsx / PagerView.tsx，二者不 import State；引用 useNativeState 的是 .android.tsx / .ios.tsx，web 平台下 Metro 不解析，无原生求值"
+  },
+  "@expo/ui/community/segmented-control": {
+    "tier": "passthrough",
+    "note": "web 解析走平台中立的 Picker.tsx / PagerView.tsx，二者不 import State；引用 useNativeState 的是 .android.tsx / .ios.tsx，web 平台下 Metro 不解析，无原生求值"
+  },
+  "@expo/ui/community/slider": {
+    "tier": "passthrough",
+    "note": "web 解析走平台中立的 Picker.tsx / PagerView.tsx，二者不 import State；引用 useNativeState 的是 .android.tsx / .ios.tsx，web 平台下 Metro 不解析，无原生求值"
+  },
+  "@expo/ui/babel-plugin": {
+    "tier": "passthrough",
+    "note": "构建期 babel 插件，不进 bundle，web 运行时不求值"
+  }
+}

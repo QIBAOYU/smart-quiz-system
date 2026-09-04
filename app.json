@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "智能刷题系统",
+    "slug": "meoo-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "meoo",
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {},
+    "extra": {
+      "supabaseUrl": "https://tp5m415y2fjx8v5m.database.meoo.xyz",
+      "meooBuildId": "9b7b115d7e2ecd51d706d472230d0e50"
+    }
+  }
+}
