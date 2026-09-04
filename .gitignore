@@ -127,3 +127,8 @@ tmp/
 
 # Expo 本地开发状态
 .expo/
+
+# Meoo 平台导出元数据（重新导入平台才用得上，不进仓库）
+.meoo-*
+meoo-cloud-snapshot.json
+meoo-manifest.json
