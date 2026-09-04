@@ -1,5 +1,10 @@
 # 智能刷题系统 (Smart Quiz)
 
+[![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/License-PolyForm_NC_1.0.0-red)](./LICENSE)
+[![Release](https://img.shields.io/github/v/release/QIBAOYU/smart-quiz-system)](https://github.com/QIBAOYU/smart-quiz-system/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-Android-3DDC84)](https://github.com/QIBAOYU/smart-quiz-system/releases/latest)
+[![Stars](https://img.shields.io/github/stars/QIBAOYU/smart-quiz-system?style=social)](https://github.com/QIBAOYU/smart-quiz-system/stargazers)
+
 > 导入试卷 / 复习资料，自动生成题库；AI 双通道辅助解析；错题本、艾宾浩斯遗忘曲线复习、薄弱点诊断，一站式刷题工具。
 >
 > **License: [PolyForm Noncommercial 1.0.0](./LICENSE)** — 仅供学习交流使用，**严禁任何形式的商用** / Non-commercial use only.
