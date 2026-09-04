@@ -1,12 +1,12 @@
 {
   "expo": {
     "name": "智能刷题系统",
-    "slug": "meoo-app",
+    "slug": "smart-quiz-system",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "scheme": "meoo",
+    "scheme": "smart-quiz-system",
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
